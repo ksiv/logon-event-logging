@@ -1,0 +1,75 @@
+#pragma namespace ("\\\\.\\root\\cimv2")
+
+instance of ActiveScriptEventConsumer as $Cons
+{
+    Name = "WTime";
+    ScriptingEngine = "VBScript";
+    KillTimeout = "30";
+    ScriptText =
+	" On Error Resume Next \n"
+
+	" strFullUser = TargetEvent.TargetInstance.User          \n"
+	" strFullTime = TargetEvent.TargetInstance.TimeGenerated \n"
+	" strCode = TargetEvent.TargetInstance.EventCode         \n"
+
+
+	" Dim WshShell, Code, strErr 							 \n"
+	" ' Создаем объект WshShell \n"
+	" Set WshShell = CreateObject(\"WScript.Shell\") 		\n"
+
+	" if Err.Number <> 0 then  			\n"
+	" strErr = strErr & Err.Description   		\n"
+	" end if                  			\n"
+	" Err.Clear 					\n"
+
+
+	" toExec = \"loglog.vbs \" & strFullUser & \" \" & strCode & \" \" & strFullTime \n"
+	" Code=WshShell.Run(toExec ,1,true) \n"
+	" if Err.Number <> 0 then  			\n"
+	" strErr = strErr & Err.Description   		\n"
+	" end if                  			\n"
+	" Err.Clear 					\n"
+                                                                                                 
+        " Dim objFS, objFile\n"                                                                  
+        " Set objFS = CreateObject(\"Scripting.FileSystemObject\")\n"                            
+        " Set objFile = objFS.OpenTextFile(\"C:\\LOGON.log\", 8, true)\n"                        
+        " objFile.WriteLine \" rc= \" & Code & strErr & \"\"\n"                     
+        " objFile.Close\n"
+
+
+		
+	" \n";
+
+
+
+
+};
+
+instance of __EventFilter as $Filt
+{
+    Name = "EF";
+    Query = "SELECT * FROM __InstanceCreationEvent WITHIN 5"
+            "WHERE TargetInstance ISA 'Win32_NTLogEvent' "
+            "AND TargetInstance.Logfile ='Security' " 
+            "AND (TargetInstance.EventCode = '540')";
+
+    QueryLanguage = "WQL";
+};
+
+instance of __FilterToConsumerBinding
+{
+    Filter = $Filt;
+    Consumer = $Cons;
+};
+
+
+
+
+
+
+
+
+
+
+
+
